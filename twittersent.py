@@ -23,7 +23,9 @@ else:
 
 def write_to_csv(tweet, dict_data, sentiment):
     csvFile = open('tweetsResults.csv', 'a')
+    
     dict_data["text"] = clear_tweets(dict_data["text"])
+    
     csvWriter = csv.writer(csvFile)
 
     if(os.stat(r"C:\Users\icell\Desktop\Programlama\Python\TwintForTwitter\tweepy\tweetsResults.csv").st_size == 0):
@@ -31,7 +33,7 @@ def write_to_csv(tweet, dict_data, sentiment):
                             "Polarity", "Subjectivity", "User Name", "Place"])
 
     # Write a row to the CSV file. I use encode UTF-8
-    csvWriter.writerow([dict_data["created_at"], dict_data["source"], dict_data["text"].encode('utf-8'), sentiment,
+    csvWriter.writerow([dict_data["created_at"], dict_data["source"].encode('utf-8'), dict_data["text"].encode('utf-8'), sentiment,
                         tweet.sentiment.polarity, tweet.sentiment.subjectivity, dict_data["user"]["screen_name"], dict_data["place"]])
     csvFile.close()
 
@@ -66,10 +68,10 @@ class TweetStreamListener(StreamListener):
 
         # pass tweet into TextBlob wihout reTweets
         tweet = TextBlob(dict_data["text"])
-        print(tweet)
+        # print(tweet)
 
         # output sentiment polarity
-        print(tweet.sentiment.polarity)
+        # print(tweet.sentiment.polarity)
 
         # determine if sentiment is positive, negative, or neutral
         if tweet.sentiment.polarity < 0:
@@ -80,19 +82,21 @@ class TweetStreamListener(StreamListener):
             sentiment = "positive"
 
         # output sentiment
-        print(sentiment)
+        # print(sentiment)
 
         write_to_csv(tweet, dict_data, sentiment)
         # add text and sentiment info to elasticsearch
-        # es.index(index="sentiment",
-        #          doc_type="test-type",
-        #          body={"author": dict_data["user"]["screen_name"],
-        #                "date": dict_data["created_at"],
-        #                "message": dict_data["text"],
-        #                "polarity": tweet.sentiment.polarity,
-        #                "subjectivity": tweet.sentiment.subjectivity,
-        #                "sentiment": sentiment})
-        # return True
+        es.index(index="sentiment",
+                 doc_type="test-type",
+                 body={"author": dict_data["user"]["screen_name"],
+                       "date": dict_data["created_at"],
+                       "message": dict_data["text"],
+                       "source": dict_data["source"],
+                       "polarity": tweet.sentiment.polarity,
+                       "subjectivity": tweet.sentiment.subjectivity,
+                       "sentiment": sentiment,
+                       "place": dict_data["place"]})
+        return True
 
     # on failure
     def on_error(self, status):

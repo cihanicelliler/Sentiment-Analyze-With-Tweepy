@@ -66,12 +66,8 @@ class TweetStreamListener(StreamListener):
         # call clear_tweets function
         dict_data["text"] = clear_tweets(dict_data["text"])
 
-        # pass tweet into TextBlob wihout reTweets
+        # pass tweet into TextBlob
         tweet = TextBlob(dict_data["text"])
-        # print(tweet)
-
-        # output sentiment polarity
-        # print(tweet.sentiment.polarity)
 
         # determine if sentiment is positive, negative, or neutral
         if tweet.sentiment.polarity < 0:
@@ -80,9 +76,6 @@ class TweetStreamListener(StreamListener):
             sentiment = "neutral"
         else:
             sentiment = "positive"
-
-        # output sentiment
-        # print(sentiment)
 
         write_to_csv(tweet, dict_data, sentiment)
         # add text and sentiment info to elasticsearch
